@@ -8,10 +8,11 @@ export function InfoPage({ proxy }: Props) {
   const [copied, setCopied] = useState(false);
   const listen = proxy.listen || "http://127.0.0.1:9090";
   const ca = proxy.ca || "$HOME/.mitmproxy/mitmproxy-ca-cert.pem";
+  const block = envBlock(proxy.listen, proxy.ca, proxy.proxy);
 
   async function copyEnv() {
     try {
-      await navigator.clipboard.writeText(envBlock(proxy.listen, proxy.ca));
+      await navigator.clipboard.writeText(block);
       setCopied(true);
       setTimeout(() => setCopied(false), 1200);
     } catch (err) {
@@ -37,7 +38,7 @@ export function InfoPage({ proxy }: Props) {
           </li>
           <li>
             <strong>Intercept</strong>
-            <p>Hold Bedrock invokes. Edit, then Forward or Drop.</p>
+            <p>Hold Bedrock invokes. Edit, then Forward or Drop. Off until Proxy is on.</p>
           </li>
         </ol>
         <div className="card">
@@ -52,7 +53,11 @@ export function InfoPage({ proxy }: Props) {
               <span title={ca}>{ca}</span>
             </div>
           </div>
-          <p className="lead">Every new process needs these. Trust the CA only while Proxy is on.</p>
+          <p className="lead">
+            {proxy.proxy
+              ? "Proxy is on. A new process needs the CA too; restart claude after these exports."
+              : "Every new process needs these. With Proxy off, HTTPS is tunneled (no CA)."}
+          </p>
           <div className="env-block">
             <button
               type="button"
@@ -73,7 +78,7 @@ export function InfoPage({ proxy }: Props) {
                 </svg>
               )}
             </button>
-            <pre className="code">{envBlock(proxy.listen, proxy.ca)}</pre>
+            <pre className="code">{block}</pre>
           </div>
         </div>
       </div>

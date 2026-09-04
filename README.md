@@ -17,8 +17,8 @@ Edited hold, then Forward or Drop:
 ## Prerequisites
 
 - Python 3.12+ and [uv](https://docs.astral.sh/uv/)
-- Claude Code with `CLAUDE_CODE_USE_BEDROCK=1`
-- AWS credentials in the process that runs `main.py` (`AWS_PROFILE`, SSO, or the default chain)
+- Claude Code actually hitting Bedrock Runtime (`CLAUDE_CODE_USE_BEDROCK=1`, same region/profile as a working `claude` session)
+- AWS credentials in the process that runs `main.py` (`AWS_PROFILE`, SSO, or the default chain). Forwarding an edited body also needs `InvokeModel` on those same models (`--aws-profile` / `AWS_PROFILE` / SSO).
 
 ## Quick start
 
@@ -28,6 +28,8 @@ uv run python main.py --aws-profile your-profile   # optional; same chain as AWS
 ```
 
 Listener: `http://127.0.0.1:9090`. UI: `http://127.0.0.1:8765`. First run writes the mitmproxy CA to `~/.mitmproxy/mitmproxy-ca-cert.pem`.
+
+UI tabs: Sessions, Usage, Proxy, Info. Proxy/Intercept are in the header (Intercept stays off until Proxy is on). Default view is Sessions.
 
 **1. Pin every new Claude Code process** (it does not inherit exports from another shell):
 
@@ -48,9 +50,9 @@ export REQUESTS_CA_BUNDLE="$HOME/.mitmproxy/mitmproxy-ca-cert.pem"
 export AWS_CA_BUNDLE="$HOME/.mitmproxy/mitmproxy-ca-cert.pem"
 ```
 
-Restart `claude` after the CA exports. Send a message. Sessions with `x-claude-code-session-id` land in `logs/<client>/<session-id>.jsonl`.
+Restart `claude` after the CA exports. Send a message. A session with `x-claude-code-session-id` appears under Sessions (and on the Proxy page while live). Rows land in `logs/<client>/<session-id>.jsonl`. Empty Sessions with Proxy off is expected; costs still come from `~/.claude/projects`.
 
-**3. Intercept:** Proxy page → **Intercept** on. Each Bedrock Runtime `invoke` / `invoke-with-response-stream` with `x-claude-code-session-id` is held. Edit the head JSON, then **Forward** or **Drop**.
+**3. Intercept:** turn **Intercept** on in the header (disabled until Proxy is on). Each Bedrock Runtime `invoke` / `invoke-with-response-stream` with `x-claude-code-session-id` is held. Edit the head JSON, then **Forward** or **Drop**.
 
 - Untouched JSON → resumed as the original (no re-sign).
 - Edited JSON → re-signed SigV4 from this process’s AWS chain (`--aws-profile` / `AWS_PROFILE` / SSO).
@@ -92,7 +94,6 @@ UI is served from `ui/dist`. Hot reload: keep `main.py` running, `cd ui && bun r
 
 - New `claude` after `HTTP(S)_PROXY` (and CA, if Proxy is on).
 - TLS errors with Proxy on → CA exports missing or an old process without them.
-- Empty Sessions with Proxy off → expected for chat; costs still come from journals.
 - `$0` → unknown model/profile; map inference-profile ids.
 - Intercept never holds → not a Bedrock `invoke`, or no `x-claude-code-session-id`.
 

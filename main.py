@@ -33,11 +33,13 @@ def print_setup(port: int) -> None:
     log.info("")
     log.info("Claude Code / any client:")
     log.info("    export HTTP_PROXY=%s HTTPS_PROXY=%s", proxy, proxy)
-    log.info("    export NODE_EXTRA_CA_CERTS=%s", cert)
-    log.info("    export SSL_CERT_FILE=%s REQUESTS_CA_BUNDLE=%s AWS_CA_BUNDLE=%s", cert, cert, cert)
     log.info("    claude")
     log.info("")
-    log.info("With proxy OFF, LLM HTTPS is tunneled (no mitmproxy CA). Trust the CA only when proxy is ON.")
+    log.info("With proxy OFF, LLM HTTPS is tunneled (no mitmproxy CA).")
+    log.info("When Proxy is ON, also export the CA and restart claude:")
+    log.info("    export NODE_EXTRA_CA_CERTS=%s", cert)
+    log.info("    export SSL_CERT_FILE=%s REQUESTS_CA_BUNDLE=%s AWS_CA_BUNDLE=%s", cert, cert, cert)
+    log.info("Trust the CA only when proxy is ON.")
 
 
 def _launch_ui(

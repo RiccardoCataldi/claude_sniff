@@ -163,16 +163,22 @@ export function contentParts(content: unknown): ContentPart[] {
   return parts;
 }
 
-export function envBlock(listen: string | null | undefined, ca: string | null | undefined): string {
+export function envBlock(
+  listen: string | null | undefined,
+  ca: string | null | undefined,
+  includeCa = false,
+): string {
   const proxy = listen || "http://127.0.0.1:9090";
   const cert = ca || "$HOME/.mitmproxy/mitmproxy-ca-cert.pem";
-  return [
-    `export HTTP_PROXY=${proxy}`,
-    `export HTTPS_PROXY=${proxy}`,
-    `export NODE_EXTRA_CA_CERTS=${cert}`,
-    `export SSL_CERT_FILE=${cert}`,
-    `export REQUESTS_CA_BUNDLE=${cert}`,
-    `export AWS_CA_BUNDLE=${cert}`,
-    `claude`,
-  ].join("\n");
+  const lines = [`export HTTP_PROXY=${proxy}`, `export HTTPS_PROXY=${proxy}`];
+  if (includeCa) {
+    lines.push(
+      `export NODE_EXTRA_CA_CERTS=${cert}`,
+      `export SSL_CERT_FILE=${cert}`,
+      `export REQUESTS_CA_BUNDLE=${cert}`,
+      `export AWS_CA_BUNDLE=${cert}`,
+    );
+  }
+  lines.push("claude");
+  return lines.join("\n");
 }
