@@ -1,0 +1,10 @@
+[project]
+name = "claude-sniff"
+version = "0.1.0"
+description = "Local observability for Claude Code on Amazon Bedrock"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "botocore>=1.43.82",
+    "mitmproxy",
+]
